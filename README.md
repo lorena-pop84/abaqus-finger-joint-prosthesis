@@ -1,150 +1,114 @@
 # abaqus-finger-joint-prosthesis
 Finite element analysis of a simplified PIP finger joint prosthesis in Abaqus/CAE.
-# Finger Joint Prosthesis (PIP) — FEA Study
+# Finger Joint Prosthesis (PIP): FEA of a Hinge Under a 10 N Load
 
-## Overview
-This project presents a finite element analysis (FEA) of a simplified proximal interphalangeal (PIP) finger joint prosthesis evaluated under a functional pinch-loading condition.
-
-The mechanism consists of a four-part assembly where flexion-extension rotation is enabled by a central hinge pin. To evaluate joint stress distribution, contact stability, and required activation force, I developed a non-linear finite element model in **Abaqus/CAE** under a displacement-controlled load of **U2 = -2.0 mm**.
-
----
-
-## Key Engineering Highlights
-* **Non-Linear Kinematics (`Nlgeom: ON`):** Enabled geometric non-linearity to properly capture large rotational kinematics, evolving contact normal vectors, and finite sliding along the hinge interface.
-* **Manual Hex Partitioning:** Applied extensive geometric partitioning to create a structured 8-node hexahedral mesh (Hex, Structured/Sweep) across all four components, drastically reducing mesh quality warnings (down to <0.5% localized warnings).
-* **Titanium Margin & FOS:** Modeled in Ti-6Al-4V alloy (E = 110,000 MPa, yield limit ~830 MPa). Peak von Mises stress reached **54.26 MPa**, providing a high Factor of Safety of **~15.3**.
-* **Functional Kinematics:** A 2.0 mm vertical stroke yielded a reaction force of **53.1 N** (within natural pinch-force limits), with high rotational freedom and near-zero lateral play (U1 ≈ 0.001 mm).
-
----
-
-## Objective
-The primary goals of this finite element analysis were:
-* Evaluate maximum von Mises stress levels across all four prosthetic components.
-* Verify contact stress distributions and stability along the hinge interface.
-* Calculate the total reaction force generated under prescribed displacement.
-* Assess rotational kinematics and check for potential lateral instability.
-* Ensure structural reliability under simulated physiological loading.
-
----
-
-## My Contribution
-Starting from the base CAD geometry provided by a colleague, I developed the complete FEA setup in Abaqus/CAE, including:
-* **Geometry Partitioning:** Executed manual part-level partitioning to enable structured hex meshing on complex curved surfaces.
-* **Non-Linear Step & Solvers:** Configured a non-linear static step with adaptive contact stabilization to assist convergence during initial contact engagement.
-* **Contact & Interface Setup:** Defined Surface-to-Surface pairs with penalty friction (μ = 0.15) and finite sliding formulations.
-* **Kinematic Idealization:** Created Reference Points and structural distributing couplings to transfer loads and boundary conditions without artificial stress concentrations.
-* **Post-Processing & Validation:** Extracted reaction force curves, joint displacement envelopes, and stress distributions.
-
----
-
-## Software and Tools
-* **Abaqus/CAE** (FEA modeling, solver & post-processing)
-
----
-
-## Model Setup & Assembly
-The simplified prosthetic assembly consists of four key components:
-1. **Proximal Articular Implant:** The fixed component anchored to the bone.
-2. **Distal Component:** The rotating lever arm that replicates finger flexion.
-3. **Hinge Pin:** The central shaft defining the rotational axis.
-4. **Locking Ring Nut:** Secures the hinge pin against axial movement.
+Finite element analysis of a simplified hinge-type prosthesis for the proximal interphalangeal (PIP) finger joint, made in Abaqus/CAE. A 10 N force is applied to the moving part, and the model shows where the stress and the contact pressure appear in the hinge.
 
 ![FEA model](images/fea-model.png)
 
----
+## Results at a glance
 
-## Material Properties
-All components were assigned an isotropic linear elastic material model representing medical-grade **Ti-6Al-4V titanium alloy**.
+| Result | Value |
+| :--- | ---: |
+| Load | 10 N |
+| Max von Mises stress | 0.66 MPa |
+| Max contact pressure | 0.90 MPa |
+| Max displacement | below 0.005 mm |
+
+The peak stress is at the hinge, around the pin and the ears of the implant. It is very small compared with the strength of titanium alloy (several hundred MPa), so the hinge stays elastic under this load.
+
+## About the model
+
+- **Geometry:** the four parts were designed by a colleague in Abaqus. I did not model the geometry.
+- **My part:** I built the whole analysis: partitioning and meshing, material, contacts and ties, supports, load and post-processing.
+- **Tool:** Abaqus/CAE 6.14 (Standard solver).
+- **Units:** mm, N, MPa.
+
+### Parts
+
+The part names in the input file are in Romanian. This table explains them.
+
+| Name in the file | English | What it does |
+| :--- | :--- | :--- |
+| `implant_articular_deget` | finger joint implant | Fixed part. Its two ears hold the pin. |
+| `parte distala` | distal part | Moving part. It sits on the pin, between the ears, and receives the load. |
+| `bolt` | bolt | The hinge pin. |
+| `piulita bolt` | bolt nut | Small nut at the end of the pin. |
+
+## Model setup
+
+### Material
+All four parts use one isotropic, linear elastic titanium alloy.
 
 | Property | Value |
 | :--- | ---: |
-| Material | Ti-6Al-4V Alloy |
+| Material | Ti-6Al-4V |
 | Young's modulus (E) | 110,000 MPa |
 | Poisson's ratio | 0.33 |
-| Yield strength | ~830–900 MPa |
 
-A homogeneous solid section was assigned to all four parts.
-
----
-
-## FEA Setup & Boundary Conditions
-
-### Step & Loading Controls
-* **Analysis Type:** Static, General (`Nlgeom: ON`)
-* **Displacement Load:** A prescribed vertical displacement of **U2 = -2.0 mm** was applied at Reference Point 2 (RP-2), coupled to the front face of the distal component. Rotational degrees of freedom were left unconstrained to allow natural joint articulation.
-
-![Load](images/load.png)
-
-### Boundary Conditions & Interactions
-* **Fixed Support:** An **ENCASTRE** condition was applied via RP-1 to the circular rear face of the proximal implant.
-* **Tie Constraints:** Applied between the hinge pin and proximal implant lugs, and between the locking ring nut and pin end.
-* **Contact Pair:** Surface-to-Surface contact between the outer surface of the hinge pin and the internal bore of the distal component, using Hard normal behavior, Penalty friction (μ = 0.15), and Finite Sliding.
-* **Structural distributing couplings:** Applied in order to distribute the boundary condition and prescribed displacement over the corresponding circular faces.
-
-![Boundary conditions](images/boundary-conditions.png)
-![Coupling](images/coupling.png)
-
----
-
-## Mesh
-All four components were manually partitioned at the part level to achieve a structured hexahedral mesh.
-
-| Mesh Parameter | Value |
-| :--- | ---: |
-| Element Type | Hexahedral (Hex) |
-| Meshing Technique | Structured |
-| Global Element Size | 1.0 mm |
-| Curvature Control | 0.05 |
+### Mesh
+Structured hexahedral elements (C3D8R), about 56,000 in total. The parts were partitioned by hand so they could be meshed this way. Global element size 1.0 mm, curvature control 0.05. Results come from a single mesh; no mesh convergence study was done.
 
 ![Mesh](images/mesh.png)
 
----
+### Connections between parts
+- **Tied:** the pin is tied to the holes in the ears of the implant, so it stays fixed in the implant. The nut is tied to the pin and to the implant face.
+- **Contact (two pairs):** the pin and the hole of the distal part, and the distal part and the faces of the ears. Both use hard contact with friction (coefficient 0.15). The distal part is free to rotate on the pin.
 
-## Results & Discussion
+### Supports
+The base of the implant is fixed in all directions (ENCASTRE). It is connected through a reference point (RP-1) to the round rear face of the implant.
 
-### Reaction Force & Resistance
-Under the prescribed **U2 = -2.0 mm** flexion stroke, the model generated the following reaction forces at the fixed base:
+![Boundary conditions](images/boundary-condition.png)
 
-| Component / Direction | Reaction Force | Interpretation |
-| :--- | ---: | :--- |
-| **RF2 (Vertical)** | **53.10 N** | Primary therapeutic pinch force |
-| RF3 (Longitudinal) | 0.10 N | Minimal axial shear force |
-| RF1 (Transverse) | 0.00 N | Zero lateral reaction force |
-| **RF Total** | **53.11 N** | **Total reaction magnitude** |
+### Load
+- A force of **10 N** (in the -Y direction) at a reference point (RP-2), which is connected to the end face of the distal part.
+- Rotation about the pin axis is locked at the same point, so the hinge stays at one fixed angle. This is a check of the hinge in one position, not a simulation of the finger bending.
+- Single static step. The 10 N is a reference value to see where the load goes, not a measured pinch force.
 
-The 53.1 N reaction force matches typical physiological pinch forces required during light functional grasping tasks.
+![Load](images/load.png)
 
----
+### Names in the input file
 
-### Von Mises Stress Analysis
-The maximum von Mises stress reached **54.26 MPa**, located on the internal bearing surface of the distal component near the contact line with the hinge pin.
+| Name in the file | What it is |
+| :--- | :--- |
+| `Int-bolt-distal` | Contact: pin and distal part |
+| `Int-distal-implant` | Contact: distal part and ears of the implant |
+| `Tie-bolt` | Tie: pin and nut |
+| `Tie-bolt-implant` | Tie: pin and implant |
+| `Constraint-5` | Tie: nut and implant face |
+| `Constraint-base` / `Constraint-tip` | Couplings that connect RP-1 and RP-2 to the round end faces |
+| `Base-encastre` | Fixed support at RP-1 |
+| `BC-3` / `Load-1` | Rotation lock and 10 N force at RP-2 |
 
-| Component | Max von Mises Stress | Material Yield Strength | Factor of Safety (FOS) |
-| :--- | ---: | ---: | ---: |
-| **Distal Component** | **54.26 MPa** | **~830 MPa** | **15.3** |
-| Hinge Pin | 41.54 MPa | ~830 MPa | 20.0 |
-| Proximal Implant | 12.33 MPa | ~830 MPa | 67.3 |
-| Locking Ring Nut | 3.34 MPa | ~830 MPa | 248.5 |
+## Results
 
-![Von Mises](images/von-mises.png)
+### Von Mises stress
+The maximum von Mises stress is **0.66 MPa**, in the hinge area around the pin and the ears of the implant.
 
----
+![Von Mises stress](images/von-mises.png)
 
-### Joint Displacement & Kinematics
-Displacement contours confirm smooth joint rotation without binding or lateral misalignment.
+The lighter stress patches at the outer ends of the parts come from the supports and the coupling on the round end faces. They are an effect of how the load is applied, not a result for the hinge, so the value to read is the stress at the hinge.
 
-| Parameter | Value | Kinematic Significance |
-| :--- | ---: | :--- |
-| U1 (Lateral) | ~0.001 mm | High joint stability against dislocation |
-| U2 (Vertical) | -2.035 mm | Prescribed joint flexion stroke |
-| U3 (Longitudinal Range) | +0.931 to -0.852 mm | Rotational sweeping motion |
-| **U Magnitude (Total)** | **2.180 mm** | **Peak total displacement** |
+### Contact pressure
+The maximum contact pressure is **0.90 MPa**. It forms a narrow strip along the pin, on the side where the load pushes. The faces of the ears are barely touched.
+
+![Contact pressure](images/contact-pressure.png)
+![Pin contact pressure](images/contact-pressure-pin.png)
+
+### Displacement
+The maximum displacement is about 0.004 mm: the distal part moves as one block and the fixed implant does not move. This value is not used as a stiffness, because part of it comes from the small gaps between the parts closing at the start (see Limitations).
 
 ![Displacement](images/displacement.png)
 
----
+## Limitations
 
-## Conclusions
-1. **High Safety Factor:** With a peak von Mises stress of 54.26 MPa relative to an 830 MPa yield limit, the prosthesis achieves a Factor of Safety of ~15.3 under functional pinch loading.
-2. **Stable Contact Kinematics:** Non-linear contact modeling verified smooth rotation of the distal component around the hinge pin with negligible lateral instability (U1 ≈ 0.001 mm).
-3. **Biomechanical Feasibility:** The required 53.1 N reaction force confirms that the prosthesis operates within realistic anatomical pinch load ranges.
+- One simple load case: 10 N at one fixed hinge angle. There is no bending motion and no tendon or muscle forces.
+- The load is a reference value, so I do not give a safety factor.
+- The material is linear elastic. Bone, wear and fatigue are not included, and the geometry is simplified.
+- Results are from one mesh, with no convergence study.
+- The parts touch each other with no clearance in the geometry. The mesh makes circles from small flat facets, which leaves gaps of a few microns. They close in the first part of the step, and this makes the displacement look larger than the real deformation.
+- The results were not compared with physical measurements.
+
+## Files
+
+- [model/pinch-grip-2.inp](model/pinch-grip-2.inp): Abaqus input file
