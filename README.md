@@ -111,4 +111,4 @@ The maximum displacement is about 0.004 mm: the distal part moves as one block a
 
 ## Files
 
-- [model/pinch-grip-2.inp](model/pinch-grip-2.inp): Abaqus input file
+- [models/pinch-grip-2.inp](models/pinch-grip-2.inp): Abaqus input file
