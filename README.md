@@ -1,5 +1,3 @@
-# abaqus-finger-joint-prosthesis
-Finite element analysis of a simplified PIP finger joint prosthesis in Abaqus/CAE.
 # Finger Joint Prosthesis (PIP): FEA of a Hinge Under a 10 N Load
 
 Finite element analysis of a simplified hinge-type prosthesis for the proximal interphalangeal (PIP) finger joint, made in Abaqus/CAE. A 10 N force is applied to the moving part, and the model shows where the stress and the contact pressure appear in the hinge.
